@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Robot Mini</title>
+<style>
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #111;
+}
+
+.robot {
+  width: 200px;
+  height: 200px;
+  background: #222;
+  border-radius: 30px;
+  position: relative;
+  animation: breathing 4s infinite;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.eye {
+  width: 30px;
+  height: 30px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 60px;
+  transition: 0.3s;
+}
+
+.eye.left { left: 40px; }
+.eye.right { right: 40px; }
+
+.mouth {
+  width: 60px;
+  height: 20px;
+  background: white;
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 20px;
+  transition: 0.3s;
+}
+
+/* Animations */
+@keyframes breathing {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+.blink {
+  height: 5px !important;
+}
+
+/* Emotion states */
+.happy .mouth { height: 30px; border-radius: 0 0 50px 50px; }
+.sad .mouth { height: 10px; border-radius: 50px 50px 0 0; }
+.confused .eye.left { transform: rotate(20deg); }
+.confused .eye.right { transform: rotate(-20deg); }
+
+</style>
+</head>
+
+<body>
+
+<div class="robot" id="robot">
+  <div class="eye left" id="eyeL"></div>
+  <div class="eye right" id="eyeR"></div>
+  <div class="mouth" id="mouth"></div>
+</div>
+
+<script>
+const robot = document.getElementById("robot");
+const eyeL = document.getElementById("eyeL");
+const eyeR = document.getElementById("eyeR");
+
+/* Blink */
+setInterval(() => {
+  eyeL.classList.add("blink");
+  eyeR.classList.add("blink");
+  setTimeout(()=>{
+    eyeL.classList.remove("blink");
+    eyeR.classList.remove("blink");
+  },200);
+}, 5000);
+
+/* Speech Recognition */
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+recognition.lang = "vi-VN";
+
+/* Speech */
+function speak(text){
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "vi-VN";
+  speech.rate = 1;
+  speechSynthesis.speak(speech);
+}
+
+/* Emotion */
+function setEmotion(type){
+  robot.className = "robot " + type;
+}
+
+/* Click to start */
+robot.onclick = () => {
+  setEmotion("confused"); // đang nghe
+  recognition.start();
+};
+
+recognition.onresult = (event) => {
+  const text = event.results[0][0].transcript.toLowerCase();
+  console.log(text);
+
+  if(text.includes("chào")){
+    setEmotion("happy");
+    speak("Xin chào chủ nhân!");
+  }
+  else if(text.includes("buồn") || text.includes("chán")){
+    setEmotion("sad");
+    speak("Mình luôn ở đây với bạn.");
+  }
+  else{
+    setEmotion("confused");
+    speak("Mình chưa hiểu, bạn nói lại nhé.");
+  }
+};
+</script>
+
+</body>
+</html>
